@@ -135,7 +135,7 @@
       return `<div class="qb-row" style="--c:${c}">
         <a class="qb-doc" href="${href('doctors', d)}"><span class="qb-av">${esc(initials(d.name))}</span><span class="qb-name">${esc(titleOf('doctors', d))}</span></a>
         <div class="qb-cur">${shown
-          ? `<a class="qb-num num${first ? ' wait' : ''}" href="${href('appointments', shown)}" title="${first ? 'התור הראשון היום' : 'תור נוכחי'}">${esc(shown.apptNo)}</a><span class="qb-time num">${ftime(shown.dateTime)}</span>`
+          ? `<a class="qb-num num${first ? ' wait' : ''}" href="${href('appointments', shown)}" title="${first ? 'התור הראשון היום' : 'תור נוכחי'} · ${ftime(shown.dateTime)}">${esc(shown.apptNo)}</a>`
           : '<span class="qb-num none">—</span>'}</div>
         <div class="qb-next">${next.length
           ? next.map(a => `<a class="qb-chip" href="${href('appointments', a)}"><b class="num">${esc(a.apptNo)}</b><small class="num">${ftime(a.dateTime)}</small></a>`).join('')
