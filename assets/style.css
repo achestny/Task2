@@ -542,24 +542,7 @@ a.qa-btn{color:inherit;text-decoration:none}
 .field input:focus,.field select:focus{border-color:#5eead4;box-shadow:0 0 0 4px rgba(13,148,136,.14)}
 a.tel{color:inherit}
 
-/* רשימת תורים */
-.appt-list{display:flex;flex-direction:column;gap:8px}
-.appt-row{display:grid;grid-template-columns:64px 4px 1fr auto auto;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);
-  border-radius:12px;color:var(--ink);text-decoration:none;transition:background .15s,border-color .15s}
-.appt-row:hover{background:#f8fafc;border-color:var(--line-2)}
-.appt-row .ar-time{display:flex;flex-direction:column;line-height:1.2}.appt-row .ar-time b{font-size:17px}
-.appt-row .ar-time small{font-size:11.5px;color:var(--muted)}
-.appt-row .ar-bar{align-self:stretch;border-radius:4px;background:var(--c)}
-.appt-row .ar-main{display:flex;flex-direction:column;min-width:0}
-.appt-row .ar-main .psub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.appt-row .ar-doc{font-size:13px;color:var(--ink-2);background:color-mix(in srgb,var(--c) 12%,#fff);padding:4px 10px;border-radius:999px;white-space:nowrap}
-.appt-row.done{opacity:.55}
-.appt-row.next{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)}
-.appt-row.next .ar-time small{color:var(--c);font-weight:700}
-@media (max-width:620px){.appt-row{grid-template-columns:56px 4px 1fr}.appt-row .ar-doc{grid-column:3;justify-self:start}.appt-row .tag{grid-column:3;justify-self:start}}
-
 /* התור הבא */
-.next-card{display:flex;flex-direction:column}
 .next-appt{display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:14px;color:var(--ink);text-decoration:none;
   background:linear-gradient(160deg,color-mix(in srgb,var(--c) 14%,#fff),#fff 70%);border:1px solid color-mix(in srgb,var(--c) 35%,#fff)}
 .next-appt.big{margin-bottom:20px;flex-direction:row;flex-wrap:wrap;align-items:center;gap:18px 34px}
@@ -568,52 +551,6 @@ a.tel{color:inherit}
 .next-appt .na-day{font-size:13.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .next-appt .na-who{display:flex;align-items:center;gap:12px}
 .next-appt .na-doc{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-2)}
-.hours{display:flex;gap:12px;align-items:flex-start;margin-top:auto;padding-top:16px;border-top:1px solid var(--line);margin-top:18px}
-.hours b{font-size:14px}
-
-/* סינון תורים */
-.seg{display:inline-flex;gap:4px;padding:4px;background:#eef2f7;border-radius:12px;margin:0 0 14px}
-.seg button{border:0;background:transparent;padding:7px 16px;border-radius:9px;font:inherit;font-size:14px;color:var(--ink-2);cursor:pointer}
-.seg button[aria-selected="true"]{background:#fff;color:var(--ink);font-weight:600;box-shadow:var(--sh-1)}
-.sel{display:flex;align-items:center;gap:8px}
-.sel select{border:1px solid var(--line-2);border-radius:10px;padding:9px 12px;background:#fff;font:inherit;min-height:42px}
-
-/* טופס – תאריך ושעה */
-.dt-row{display:flex;gap:8px;align-items:stretch}
-.dt-row input{flex:1}
-.dt-row .btn{white-space:nowrap}
-.field input[type="datetime-local"]{-webkit-appearance:none;appearance:none;min-height:44px;text-align:right}
-
-/* יומן שבועי */
-.cal-card{overflow:hidden}
-.cal-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--line)}
-.cal-nav .spacer{flex:1}
-.cal-range{font-size:15px;margin-inline-start:8px}
-.cal-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted)}
-.cal-legend span{display:flex;align-items:center;gap:6px}.cal-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.cal-scroll{overflow:auto;max-height:calc(100vh - 250px);min-height:420px}
-.cal{min-width:760px}
-.cal-head{display:grid;grid-template-columns:56px repeat(6,1fr);position:sticky;top:0;z-index:3;background:#fff;border-bottom:1px solid var(--line)}
-.cal-head span{display:flex;flex-direction:column;align-items:center;padding:10px 4px;font-size:13px}
-.cal-head small{color:var(--muted)}
-.cal-head .is-today b{color:var(--primary)}.cal-head .is-today small{background:var(--primary);color:#fff;border-radius:999px;padding:0 8px}
-.cal-body{display:grid;grid-template-columns:56px repeat(6,1fr);position:relative}
-.cal-gutter span{display:block;height:var(--pxh);font-size:11.5px;color:var(--faint);text-align:center;transform:translateY(-7px)}
-.cal-gutter span:first-child{transform:none}
-.cal-col{position:relative;height:calc(var(--rows) * var(--pxh));border-inline-start:1px solid var(--line);cursor:copy;
-  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--pxh) - 1px),var(--line) calc(var(--pxh) - 1px),var(--line) var(--pxh))}
-.cal-col.past{background-color:#fafbfc;cursor:default}
-.cal-col.is-today{background-color:color-mix(in srgb,var(--primary) 5%,#fff)}
-.cal-closed{position:absolute;inset-inline:0;bottom:0;background:repeating-linear-gradient(-45deg,#f1f5f9 0 8px,#e9eef4 8px 16px);
-  display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-size:12px;color:var(--faint);cursor:not-allowed}
-.cal-now{position:absolute;inset-inline:0;height:2px;background:#e11d48;z-index:2}
-.cal-now::before{content:"";position:absolute;inset-inline-start:-5px;top:-4px;width:10px;height:10px;border-radius:50%;background:#e11d48}
-.cal-ev{position:absolute;inset-inline:4px;z-index:1;border-radius:7px;padding:2px 8px;font-size:12px;line-height:1.35;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
-  background:color-mix(in srgb,var(--c) 16%,#fff);border-inline-start:3px solid var(--c);color:var(--ink);text-decoration:none;cursor:pointer}
-.cal-ev:hover{background:color-mix(in srgb,var(--c) 26%,#fff);z-index:2}
-.cal-ev b{color:color-mix(in srgb,var(--c) 75%,#000)}
-.cal-ev.done{opacity:.55}
-
 /* ERD – עובדות שהוצאו */
 .excl{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1px dashed #fda4af;background:#fff7f8;border-radius:12px}
 .excl+.excl{margin-top:10px}
@@ -625,10 +562,9 @@ a.tel{color:inherit}
 .nav-item.active{background:rgba(20,184,166,.16);box-shadow:inset -3px 0 0 #2dd4bf}
 .nav-item.active .nav-ic{color:#5eead4}
 .erd-canvas{min-height:0!important}
-/* צילום בראש כרטיס "התור הבא" */
-.next-card{padding-top:0;overflow:hidden}
-.na-photo{margin:0 -24px 16px;height:120px;position:relative}
-.na-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,#fff)}
-.na-img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s}.na-img.ok{opacity:1}
-.welcome.has-photo .wl-photo-wrap::after{background:linear-gradient(90deg,rgba(4,47,46,.15) 0%,rgba(4,47,46,.55) 45%,rgba(4,47,46,.88) 100%),linear-gradient(0deg,rgba(4,47,46,.75),transparent 55%)!important}
-@media (max-width:860px){.na-photo{margin:0 -18px 14px}}
+.welcome.has-photo .wl-photo-wrap::after{background:linear-gradient(90deg,rgba(4,47,46,.05) 0%,rgba(4,47,46,.35) 50%,rgba(4,47,46,.78) 100%),linear-gradient(0deg,rgba(4,47,46,.6),transparent 50%)!important}
+
+.kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:900px){.kpis.k3{grid-template-columns:1fr}}
+.kpi.hero.k-teal2{background:linear-gradient(135deg,#134e4a 0%,#0f766e 55%,#0d9488 100%);box-shadow:0 12px 30px -12px rgba(13,148,136,.55)}
+.field input[type="datetime-local"]{-webkit-appearance:none;appearance:none;min-height:44px;text-align:right}

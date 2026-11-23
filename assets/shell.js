@@ -73,7 +73,6 @@
       </a>
       <div class="nav-sec">ראשי</div>
       ${link(`${base}#/`, 'home', 'לוח בקרה')}
-      ${link(`${base}#/calendar`, 'calendar', 'יומן תורים')}
       <div class="nav-sec">ישויות</div>
       ${S.entities.map(e => link(`${base}#/e/${e.key}`, e.key, e.label, `style="--c:${e.color}"`)).join('')}
       <div class="nav-sec">מודל הנתונים</div>

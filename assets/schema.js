@@ -32,13 +32,10 @@ window.SCHEMA = {
       fields: [
         { key: 'apptNo', label: 'מספר תור', type: 'number', required: true, auto: true },
         { key: 'dateTime', label: 'תאריך ושעת התור', type: 'datetime', required: true },
-        { key: 'reason', label: 'סיבת הביקור', type: 'text', required: true, minLen: 2,
+        { key: 'reason', label: 'סיבת הביקור', type: 'text', required: true,
           suggest: ['בדיקה כללית', 'מעקב', 'חידוש מרשם', 'בדיקת דם – תוצאות', 'כאבי גב', 'חום ושיעול', 'הפניה למומחה', 'חיסון'] },
         { key: 'licenseNo', label: 'רופא', type: 'ref', ref: 'doctors', required: true },
         { key: 'patientId', label: 'מטופל', type: 'ref', ref: 'patients', required: true }
-      ],
-      computed: [
-        { key: 'when', label: 'מצב', type: 'tag', fn: r => window.__apptState ? window.__apptState(r) : '' }
       ],
       title: r => `תור ${r.apptNo}`
     }
@@ -67,7 +64,7 @@ window.SCHEMA = {
 window.buildSeed = function () {
   const pad = n => String(n).padStart(2, '0');
   const base = new Date(); base.setHours(0, 0, 0, 0);
-  // נתוני ההדגמה נקבעים רק בימים א'-ה': שישי/שבת מוזזים לחמישי (עבר) או לראשון (עתיד)
+  // תאריכי ההדגמה נקבעים יחסית להיום (ללא שישי ושבת, לשם הנוחות בלבד)
   const at = (dayOffset, hhmm) => {
     const d = new Date(base); d.setDate(d.getDate() + dayOffset);
     while (d.getDay() === 5 || d.getDay() === 6) d.setDate(d.getDate() + (dayOffset < 0 ? -1 : 1));

@@ -25,7 +25,6 @@
   const fdate = d => { if (!d) return ''; const x = new Date(String(d).slice(0, 10) + 'T00:00:00'); return isNaN(x) ? esc(d) : x.toLocaleDateString('he-IL'); };
   const ftime = v => String(v || '').slice(11, 16);
   const fdt = v => v ? `${fdate(v)}, ${ftime(v)}` : '';
-  const fdtText = v => v ? `${fdate(v)} בשעה ${ftime(v)}` : '';
   const DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
   const dayName = v => { const d = parseDT(v); return d ? `יום ${DAYS[d.getDay()]}` : ''; };
   const findBy = (key, id) => { const e = ent(key); return db[key].find(r => pkOf(e, r) === String(id)); };
@@ -40,48 +39,11 @@
   const plural = (n, one, many) => (n === 1 ? one : `${n} ${many}`);
   const tile = (e, size) => `<span class="tile" style="--c:${e.color}">${ICON(e.key, size || 20)}</span>`;
 
-  /* ---------- תורים: מצב, שעות פעילות, חפיפות ---------- */
-  const APPT_MIN = 20;                                         // משך תור (דקות)
-  const HOURS = { 0: [8, 20], 1: [8, 20], 2: [8, 20], 3: [8, 20], 4: [8, 20], 5: [8, 13], 6: null };
-  const HOURS_TEXT = 'א\'-ה\' 08:00-20:00 · ו\' 08:00-13:00 · שבת סגור';
-  const nowISO = () => toLocalISO(new Date());
-  const todayISO = () => dayISO(new Date());
-  function apptState(r) {
-    const d = String(r.dateTime || '').slice(0, 10), t = todayISO();
-    return d < t ? 'עבר' : d > t ? 'עתידי' : 'היום';
-  }
-  window.__apptState = apptState;
-  const minutesBetween = (a, b) => Math.abs(parseDT(a) - parseDT(b)) / 60000;
   const byTime = (a, b) => String(a.dateTime).localeCompare(String(b.dateTime)) || a.apptNo - b.apptNo;
   const DOC_COLORS = ['#0d9488', '#8b5cf6', '#f59e0b', '#3b82f6', '#e11d48', '#16a34a', '#0891b2', '#c026d3'];
   const docColor = lic => { const i = db.doctors.findIndex(d => String(d.licenseNo) === String(lic)); return DOC_COLORS[(i < 0 ? 0 : i) % DOC_COLORS.length]; };
   const docOf = a => findBy('doctors', a.licenseNo);
   const patOf = a => findBy('patients', a.patientId);
-  /** בדיקת שעות פעילות. מחזירה הודעת שגיאה או '' */
-  function hoursError(v) {
-    const d = parseDT(v); if (!d) return '';
-    const h = HOURS[d.getDay()];
-    if (!h) return 'המרפאה סגורה בשבת';
-    const start = d.getHours() * 60 + d.getMinutes();
-    if (start < h[0] * 60 || start + APPT_MIN > h[1] * 60)
-      return `מחוץ לשעות הפעילות (${DAYS[d.getDay()]}: ${pad(h[0])}:00-${pad(h[1])}:00)`;
-    return '';
-  }
-  /** תור חופף (פחות מ-20 דקות הפרש) לאותו רופא או לאותו מטופל */
-  const clash = (field, val, dt, self) => db.appointments.find(a => a !== self && String(a[field]) === String(val) && a.dateTime && minutesBetween(a.dateTime, dt) < APPT_MIN);
-  /** המועד הפנוי הבא לרופא (ולמטופל, אם נבחר), במרווחים של 10 דקות */
-  function nextFreeSlot(lic, pid, self, from) {
-    const d = from ? new Date(from) : new Date();
-    d.setSeconds(0, 0); d.setMinutes(Math.ceil(d.getMinutes() / 10) * 10);
-    for (let i = 0; i < 6 * 24 * 21; i++, d.setMinutes(d.getMinutes() + 10)) {
-      const v = toLocalISO(d);
-      if (hoursError(v)) continue;
-      if (lic && clash('licenseNo', lic, v, self)) continue;
-      if (pid && clash('patientId', pid, v, self)) continue;
-      return v;
-    }
-    return null;
-  }
 
   /* ---------- תצוגת ערכים ---------- */
   function fmt(f, r) {
@@ -147,89 +109,39 @@
       <span class="v">${r.v}</span></div>`).join('')}</div>` : '<div class="empty" style="padding:20px">אין נתונים</div>';
   };
 
-  /** שורת תור ברשימת "תורים" (לוח בקרה / עמוד רופא / עמוד מטופל) */
-  function apptRow(a, opts) {
-    const d = docOf(a), p = patOf(a), st = apptState(a);
-    const now = nowISO(), done = a.dateTime < now;
-    return `<a class="appt-row${done ? ' done' : ''}${opts && opts.next === a ? ' next' : ''}" href="${href('appointments', a)}" style="--c:${docColor(a.licenseNo)}">
-      <span class="ar-time"><b class="num">${ftime(a.dateTime)}</b>${opts && opts.showDate ? `<small class="num">${fdate(a.dateTime)}</small>` : `<small>${done ? 'הסתיים' : opts && opts.next === a ? 'הבא בתור' : ''}</small>`}</span>
-      <span class="ar-bar"></span>
-      <span class="ar-main"><span class="pname">${esc(p ? p.name : a.patientId)}</span><span class="psub">${esc(a.reason)}</span></span>
-      <span class="ar-doc">${esc(d ? titleOf('doctors', d) : '')}</span>
-      ${opts && opts.showState ? `<span class="tag ${TAGS[st] || ''}">${st}</span>` : ''}</a>`;
-  }
-
   /* ---------- Dashboard ---------- */
   function viewHome() {
     shell('home', [['לוח בקרה', '#/']]);
-    const t = todayISO(), now = nowISO();
-    const today = db.appointments.filter(a => String(a.dateTime).slice(0, 10) === t).sort(byTime);
-    const upcoming = db.appointments.filter(a => a.dateTime >= now).sort(byTime);
-    const next = upcoming[0];
-    const in7 = new Date(); in7.setDate(in7.getDate() + 7);
-    const week = upcoming.filter(a => a.dateTime < toLocalISO(in7));
-    const doneToday = today.filter(a => a.dateTime < now).length;
-    const D = ent('doctors'), P = ent('patients'), A = ent('appointments');
-
-    const perDoc = db.doctors.map(d => ({ t: titleOf('doctors', d), link: href('doctors', d), c: docColor(d.licenseNo),
-      v: upcoming.filter(a => String(a.licenseNo) === String(d.licenseNo)).length })).sort((x, y) => y.v - x.v);
-    const reasons = {};
-    db.appointments.forEach(a => { const k = String(a.reason || '').trim(); if (k) reasons[k] = (reasons[k] || 0) + 1; });
-    const topReasons = Object.keys(reasons).map(k => ({ t: k, v: reasons[k], c: A.color })).sort((x, y) => y.v - x.v).slice(0, 6);
-    const todayH = HOURS[new Date().getDay()];
-    const nextD = next && docOf(next), nextP = next && patOf(next);
-
+    const D = ent('doctors'), P = ent('patients'), A = ent('appointments'), tA = ent('appointments');
+    const latest = db.appointments.slice().sort(byTime).reverse().slice(0, 8);
     $('#view').innerHTML = `
       <section class="welcome${window.photoImg ? ' has-photo' : ''}">
         ${window.photoImg ? `<div class="wl-photo-wrap">${photoImg('hero', 1400, 'wl-photo', true)}</div>` : ''}
         <div class="wl-text"><div class="wl-greet">${greeting()}</div>
-          <h1>לוח בקרה</h1>
-          <p>יומן התורים של המרפאה: מי מגיע היום, מה קורה השבוע ואצל איזה רופא.</p></div>
+          <h1>ניהול תורים במרפאה</h1>
+          <p>רופאים, מטופלים ותורים: רופא מקבל תור, מטופל מזמין תור.</p></div>
         <div class="qa">
-          <button class="qa-btn" type="button" id="qAppt"><span class="tile" style="--c:${A.color}">${ICON('appointments', 20)}</span>קביעת תור</button>
+          <button class="qa-btn" type="button" id="qAppt"><span class="tile" style="--c:${A.color}">${ICON('appointments', 20)}</span>תור חדש</button>
           <button class="qa-btn" type="button" id="qPat"><span class="tile" style="--c:${P.color}">${ICON('patients', 20)}</span>מטופל חדש</button>
           <button class="qa-btn" type="button" id="qDoc"><span class="tile" style="--c:${D.color}">${ICON('doctors', 20)}</span>רופא חדש</button>
-          <a class="qa-btn" href="#/calendar"><span class="tile" style="--c:#0284c7">${ICON('calendar', 20)}</span>יומן השבוע</a>
+          <a class="qa-btn" href="erd.html"><span class="tile" style="--c:#6366f1">${ICON('erd', 20)}</span>תרשים ERD</a>
         </div>
         <div class="wl-illus">${window.ILLUS ? ILLUS.clinic : ''}</div>
-        <svg class="wl-art" viewBox="0 0 200 200" aria-hidden="true"><circle cx="160" cy="40" r="90" /><circle cx="40" cy="190" r="70" /></svg>
       </section>
 
-      <div class="kpis">
-        <a class="kpi hero" href="#/e/appointments?f=today"><div class="top"><span class="lbl">תורים היום</span><span class="tile">${ICON('clock', 20)}</span></div>
-          <div class="val">${today.length}</div>
-          <div class="foot">${todayH ? (today.length ? `${doneToday} הסתיימו · ${today.length - doneToday} נותרו` : 'אין תורים היום') : 'שבת – המרפאה סגורה'}</div></a>
-        <a class="kpi hero k-violet" href="#/e/appointments?f=future"><div class="top"><span class="lbl">תורים ב-7 הימים הקרובים</span>${tile(A)}</div>
-          <div class="val">${week.length}</div><div class="foot">${upcoming.length} תורים עתידיים בסך הכול</div></a>
+      <div class="kpis k3">
+        <a class="kpi hero k-teal2" href="#/e/doctors"><div class="top"><span class="lbl">רופאים</span>${tile(D)}</div>
+          <div class="val">${db.doctors.length}</div><div class="foot">מזהה: מספר רישיון</div></a>
         <a class="kpi hero k-sky" href="#/e/patients"><div class="top"><span class="lbl">מטופלים</span>${tile(P)}</div>
-          <div class="val">${db.patients.length}</div><div class="foot">${new Set(upcoming.map(a => String(a.patientId))).size} עם תור עתידי</div></a>
-        <a class="kpi hero k-teal" href="#/e/doctors"><div class="top"><span class="lbl">רופאים</span>${tile(D)}</div>
-          <div class="val">${db.doctors.length}</div><div class="foot">${db.appointments.length} תורים במערכת</div></a>
+          <div class="val">${db.patients.length}</div><div class="foot">מזהה: תעודת זהות</div></a>
+        <a class="kpi hero k-violet" href="#/e/appointments"><div class="top"><span class="lbl">תורים</span>${tile(A)}</div>
+          <div class="val">${db.appointments.length}</div><div class="foot">מזהה: מספר תור</div></a>
       </div>
 
-      <div class="grid c21">
-        <div class="card"><div class="card-head"><h2>התורים של היום</h2><span class="sub">${esc(new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' }))}</span><a class="more" href="#/calendar">ליומן המלא</a></div>
-          ${today.length ? `<div class="appt-list">${today.map(a => apptRow(a, { next })).join('')}</div>`
-            : `<div class="empty" style="padding:26px">${window.ILLUS ? ILLUS.empty : ''}<div class="empty-t">${todayH ? 'אין תורים היום' : 'המרפאה סגורה היום'}</div></div>`}</div>
-        <div class="card next-card">${window.photoImg ? `<div class="na-photo">${photoImg('next', 700, 'na-img')}</div>` : ''}<div class="card-head"><h2>התור הבא</h2></div>
-          ${next ? `<a class="next-appt" href="${href('appointments', next)}" style="--c:${docColor(next.licenseNo)}">
-              <div class="na-when"><span class="na-day">${esc(dayName(next.dateTime))} · <span class="num">${fdate(next.dateTime)}</span></span><b class="num">${ftime(next.dateTime)}</b></div>
-              <div class="na-who"><span class="avatar" style="--c:${P.color}">${esc(initials(nextP ? nextP.name : ''))}</span>
-                <span><div class="pname">${esc(nextP ? nextP.name : next.patientId)}</div><div class="psub">${esc(next.reason)}</div></span></div>
-              <div class="na-doc">${ICON('doctors', 16)} ${esc(nextD ? titleOf('doctors', nextD) : '')}</div></a>`
-            : '<div class="empty" style="padding:20px">אין תורים עתידיים</div>'}
-          <div class="hours"><span class="tile" style="--c:#0284c7">${ICON('clock', 16)}</span><div><b>שעות פעילות</b><div class="psub">${HOURS_TEXT}</div><div class="psub">משך תור: ${APPT_MIN} דקות</div></div></div>
-        </div>
-      </div>
-
-      <div class="grid c2">
-        <div class="card"><div class="card-head"><h2>תורים עתידיים לפי רופא</h2><a class="more" href="#/e/doctors">לכל הרופאים</a></div>${bars(perDoc, 'תורים')}</div>
-        <div class="card"><div class="card-head"><h2>סיבות ביקור נפוצות</h2><a class="more" href="#/e/appointments">לכל התורים</a></div>${bars(topReasons, 'תורים')}</div>
-      </div>
-
-      <div class="card"><div class="card-head"><h2>ישויות במערכת</h2><a class="more" href="erd.html">לתרשים ה-ERD</a></div>
-        <div class="ent-strip">${S.entities.map(e => `<a class="ent-chip" href="#/e/${e.key}" style="--c:${e.color}">
-          ${tile(e, 18)}<b class="num">${db[e.key].length}</b><span>${esc(e.label)}</span></a>`).join('')}</div></div>
+      <div class="card flush"><div class="card-head" style="padding:22px 24px 4px"><h2>תורים אחרונים</h2><a class="more" href="#/e/appointments">לכל התורים</a></div>
+        ${latest.length ? `<div class="table-wrap"><table class="data"><thead><tr>${tA.fields.map(f => `<th>${esc(f.label)}</th>`).join('')}</tr></thead><tbody>
+          ${latest.map(r => `<tr data-go="${href('appointments', r)}">${tA.fields.map(f => `<td>${cell(tA, f, r)}</td>`).join('')}</tr>`).join('')}
+        </tbody></table></div>` : `<div class="empty">${window.ILLUS ? ILLUS.empty : ''}<div class="empty-t">אין עדיין תורים</div></div>`}</div>
 
       <div class="foot-note">הנתונים נשמרים בדפדפן בלבד (localStorage) · כל הנתונים פיקטיביים
         <button class="btn sm ghost" id="resetBtn" type="button">איפוס לנתוני הדגמה</button></div>`;
@@ -242,86 +154,11 @@
     });
   }
 
-  /* ---------- יומן שבועי ---------- */
-  const calState = { week: 0, doc: '' };
-  const PX_H = 72;                                          // פיקסלים לשעה
-  function viewCalendar(q) {
-    shell('calendar', [['לוח בקרה', '#/'], ['יומן תורים', '#/calendar']]);
-    if (q.d != null) calState.doc = q.d;
-    const start = new Date(); start.setHours(0, 0, 0, 0);
-    start.setDate(start.getDate() - start.getDay() + calState.week * 7);          // יום ראשון
-    const days = [...Array(6)].map((_, i) => { const d = new Date(start); d.setDate(d.getDate() + i); return d; });   // א'-ו'
-    const end = new Date(start); end.setDate(end.getDate() + 7);
-    const from = toLocalISO(start), to = toLocalISO(end), t = todayISO();
-    const rows = db.appointments.filter(a => a.dateTime >= from && a.dateTime < to && (!calState.doc || String(a.licenseNo) === calState.doc));
-    const H0 = 8, H1 = 20;
-    const range = `${days[0].toLocaleDateString('he-IL', { day: 'numeric', month: 'long' })} - ${days[5].toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })}`;
-    const nowD = new Date(), nowMin = nowD.getHours() * 60 + nowD.getMinutes();
-
-    $('#view').innerHTML = `
-      <div class="page-head with-art" style="--c:#0284c7">
-        <div class="ph-art">${window.photoImg ? photoImg('calendar', 420, 'ph-photo', true) : (window.ILLUS ? ILLUS.calendar : '')}</div>
-        <div><h1>יומן תורים <span class="count-pill" style="vertical-align:middle">${rows.length}</span></h1>
-          <p>תצוגה שבועית של התורים. לחיצה על תור פותחת אותו; לחיצה על משבצת ריקה קובעת בה תור חדש.</p></div>
-        <div class="actions">
-          <label class="sel"><span class="muted">רופא:</span><select id="calDoc"><option value="">כל הרופאים</option>
-            ${db.doctors.map(d => `<option value="${esc(d.licenseNo)}" ${calState.doc === String(d.licenseNo) ? 'selected' : ''}>${esc(titleOf('doctors', d))}</option>`).join('')}</select></label>
-          <button class="btn primary" id="calAdd" type="button">${ICON('plus', 17)} קביעת תור</button>
-        </div>
-      </div>
-      <div class="card flush cal-card">
-        <div class="cal-nav">
-          <button class="icon-btn" id="calPrev" type="button" title="השבוע הקודם" aria-label="השבוע הקודם">${ICON('chevR', 18)}</button>
-          <button class="btn sm" id="calToday" type="button" ${calState.week === 0 ? 'disabled' : ''}>השבוע</button>
-          <button class="icon-btn" id="calNext" type="button" title="השבוע הבא" aria-label="השבוע הבא">${ICON('chevL', 18)}</button>
-          <b class="cal-range">${esc(range)}</b>
-          <span class="spacer"></span>
-          <span class="cal-legend">${db.doctors.map(d => `<span><i style="background:${docColor(d.licenseNo)}"></i>${esc(titleOf('doctors', d))}</span>`).join('')}</span>
-        </div>
-        <div class="cal-scroll"><div class="cal" style="--rows:${H1 - H0};--pxh:${PX_H}px">
-          <div class="cal-head"><span></span>${days.map(d => `<span class="${dayISO(d) === t ? 'is-today' : ''}"><b>${DAYS[d.getDay()]}</b><small class="num">${d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' })}</small></span>`).join('')}</div>
-          <div class="cal-body">
-            <div class="cal-gutter">${[...Array(H1 - H0)].map((_, i) => `<span class="num">${pad(H0 + i)}:00</span>`).join('')}</div>
-            ${days.map(d => {
-              const iso = dayISO(d), h = HOURS[d.getDay()];
-              const closedTop = h ? (h[1] - H0) * PX_H : 0;
-              const list = rows.filter(a => a.dateTime.slice(0, 10) === iso).sort(byTime);
-              return `<div class="cal-col${iso === t ? ' is-today' : ''}${iso < t ? ' past' : ''}" data-day="${iso}">
-                ${h && h[1] < H1 ? `<div class="cal-closed" style="top:${closedTop}px">סגור</div>` : ''}
-                ${iso === t && nowMin >= H0 * 60 && nowMin <= H1 * 60 ? `<div class="cal-now" style="top:${(nowMin - H0 * 60) / 60 * PX_H}px"></div>` : ''}
-                ${list.map(a => {
-                  const m = Number(a.dateTime.slice(11, 13)) * 60 + Number(a.dateTime.slice(14, 16));
-                  const p = patOf(a), dc = docOf(a);
-                  return `<a class="cal-ev${a.dateTime < nowISO() ? ' done' : ''}" href="${href('appointments', a)}" style="--c:${docColor(a.licenseNo)};top:${(m - H0 * 60) / 60 * PX_H}px;height:${APPT_MIN / 60 * PX_H - 2}px"
-                    title="${esc(`${ftime(a.dateTime)} · ${p ? p.name : ''} · ${a.reason} · ${dc ? titleOf('doctors', dc) : ''}`)}"><b class="num">${ftime(a.dateTime)}</b> ${esc(p ? p.name : '')}</a>`;
-                }).join('')}</div>`;
-            }).join('')}
-          </div></div></div>
-      </div>`;
-    $('#calPrev').addEventListener('click', () => { calState.week--; viewCalendar({}); });
-    $('#calNext').addEventListener('click', () => { calState.week++; viewCalendar({}); });
-    $('#calToday').addEventListener('click', () => { calState.week = 0; viewCalendar({}); });
-    $('#calDoc').addEventListener('change', ev => { calState.doc = ev.target.value; viewCalendar({}); });
-    $('#calAdd').addEventListener('click', () => openForm('appointments', null, { licenseNo: calState.doc }));
-    document.querySelectorAll('.cal-col').forEach(col => col.addEventListener('click', ev => {
-      if (ev.target.closest('.cal-ev')) return;
-      const y = ev.clientY - col.getBoundingClientRect().top;
-      const mins = Math.max(0, Math.floor(y / PX_H * 60 / 10) * 10) + H0 * 60;
-      const v = `${col.dataset.day}T${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`;
-      if (v < nowISO()) return toast('לא ניתן לקבוע תור במועד שכבר עבר', true);
-      if (hoursError(v)) return toast(hoursError(v), true);
-      openForm('appointments', null, { dateTime: v, licenseNo: calState.doc });
-    }));
-    const sc = $('.cal-scroll'); if (sc) sc.scrollTop = 0;
-  }
-
   /* ---------- List ---------- */
-  const searchState = {}, filterState = {};
-  const FILTERS = [['all', 'הכל'], ['today', 'היום'], ['future', 'עתידיים'], ['past', 'עברו']];
+  const searchState = {};
   function viewList(key, q) {
     const e = ent(key);
     if (!e) return viewHome();
-    if (q && q.f) filterState[key] = q.f;
     shell(key, [['לוח בקרה', '#/'], [e.label, `#/e/${key}`]]);
     const isAppt = key === 'appointments';
     $('#view').innerHTML = `
@@ -331,19 +168,15 @@
           <p>${esc(e.desc)}</p></div>
         <div class="actions">
           <label class="search">${ICON('search', 17)}<input id="q" type="search" placeholder="חיפוש ב${esc(e.label)}..." value="${esc(searchState[key] || '')}" aria-label="חיפוש"></label>
-          <button class="btn primary" id="addBtn" type="button">${ICON('plus', 17)} ${isAppt ? 'קביעת תור' : esc(NEW(e))}</button>
+          <button class="btn primary" id="addBtn" type="button">${ICON('plus', 17)} ${esc(NEW(e))}</button>
         </div>
       </div>
-      ${isAppt ? `<div class="seg" role="tablist">${FILTERS.map(([k, l]) => `<button type="button" role="tab" data-f="${k}" aria-selected="${(filterState[key] || 'all') === k}">${l}</button>`).join('')}</div>` : ''}
       <div class="card flush"><div class="table-wrap" id="tbl"></div></div>`;
 
     const draw = () => {
-      const qq = (searchState[key] || '').trim().toLowerCase(), flt = filterState[key] || 'all';
+      const qq = (searchState[key] || '').trim().toLowerCase();
       let rows = db[key].filter(r => !qq || e.fields.some(f => String(searchText(f, r)).toLowerCase().includes(qq)));
-      if (isAppt) {
-        rows = rows.filter(r => flt === 'all' || { today: 'היום', future: 'עתידי', past: 'עבר' }[flt] === apptState(r)).sort(byTime);
-        if (flt === 'past') rows.reverse();
-      }
+      if (isAppt) rows = rows.slice().sort(byTime);
       const comp = e.computed || [];
       $('#tbl').innerHTML = rows.length ? `
         <table class="data"><thead><tr>
@@ -358,17 +191,11 @@
               <button class="icon-btn del" data-del="${esc(pkOf(e, r))}" title="מחיקה" aria-label="מחיקה">${ICON('trash', 16)}</button>
             </td></tr>`).join('')}
           </tbody></table>`
-        : `<div class="empty">${window.ILLUS ? ILLUS.empty : ''}<div class="empty-t">${qq || flt !== 'all' ? 'לא נמצאו רשומות תואמות' : 'אין עדיין רשומות'}</div></div>`;
+        : `<div class="empty">${window.ILLUS ? ILLUS.empty : ''}<div class="empty-t">${qq ? 'לא נמצאו רשומות תואמות' : 'אין עדיין רשומות'}</div></div>`;
     };
     draw();
     $('#q').addEventListener('input', ev => { searchState[key] = ev.target.value; draw(); });
     $('#addBtn').addEventListener('click', () => openForm(key));
-    document.querySelectorAll('.seg [data-f]').forEach(b => b.addEventListener('click', () => {
-      filterState[key] = b.dataset.f;
-      document.querySelectorAll('.seg [data-f]').forEach(x => x.setAttribute('aria-selected', x === b));
-      history.replaceState(null, '', `#/e/${key}`);
-      draw();
-    }));
   }
 
   /* ---------- Detail ---------- */
@@ -394,7 +221,7 @@
 
     const c = key === 'doctors' ? docColor(r.licenseNo) : e.color;
     const hero = PEOPLE.includes(key) ? `<span class="avatar" style="--c:${c}">${esc(initials(r.name))}</span>` : tile(e, 26);
-    const bookBtn = PEOPLE.includes(key) ? `<button class="btn primary" id="bookBtn" type="button">${ICON('plus', 16)} קביעת תור</button>` : '';
+    const bookBtn = PEOPLE.includes(key) ? `<button class="btn primary" id="bookBtn" type="button">${ICON('plus', 16)} תור חדש</button>` : '';
     $('#view').innerHTML = `
       <div class="page-head">
         <div class="detail-hero">${hero}<div>
@@ -417,32 +244,15 @@
     if (bookBtn) $('#bookBtn').addEventListener('click', () => openForm('appointments', null, key === 'doctors' ? { licenseNo: r.licenseNo } : { patientId: r.patientId }));
   }
 
-  /** אזור חזותי בראש עמוד רשומה */
+  /** אזור חזותי בראש עמוד תור */
   function visualFor(key, r) {
-    const now = nowISO();
-    if (key === 'doctors' || key === 'patients') {
-      const fk = key === 'doctors' ? 'licenseNo' : 'patientId';
-      const mine = db.appointments.filter(a => String(a[fk]) === String(r[fk])).sort(byTime);
-      const fut = mine.filter(a => a.dateTime >= now), past = mine.filter(a => a.dateTime < now);
-      const other = new Set(mine.map(a => String(key === 'doctors' ? a.patientId : a.licenseNo))).size;
-      const next = fut[0];
-      return `<div class="mini-stats">
-          ${miniStat('התור הבא', next ? `<span class="num" dir="ltr">${fdt(next.dateTime)}</span>` : 'אין', ent('appointments').color, 'clock')}
-          ${miniStat('תורים עתידיים', fut.length, '#0284c7', 'appointments')}
-          ${miniStat(key === 'doctors' ? 'מטופלים שונים' : 'ביקורים שהתקיימו', key === 'doctors' ? other : past.length, key === 'doctors' ? ent('patients').color : '#16a34a', key === 'doctors' ? 'patients' : 'check')}
-        </div>
-        ${fut.length ? `<div class="card"><div class="card-head"><h2>תורים קרובים</h2><span class="count-pill">${fut.length}</span>${key === 'doctors' ? `<a class="more" href="#/calendar?d=${encodeURIComponent(r.licenseNo)}">ביומן</a>` : ''}</div>
-          <div class="appt-list">${fut.slice(0, 5).map(a => apptRow(a, { showDate: true })).join('')}</div></div>` : ''}`;
-    }
-    if (key === 'appointments') {
-      const d = docOf(r), p = patOf(r), st = apptState(r);
-      return `<a class="next-appt big" style="--c:${docColor(r.licenseNo)}" href="#/calendar">
-          <div class="na-when"><span class="na-day">${esc(dayName(r.dateTime))} · <span class="num">${fdate(r.dateTime)}</span> <span class="tag ${TAGS[st]}">${st}</span></span><b class="num">${ftime(r.dateTime)}</b></div>
-          <div class="na-who"><span class="avatar" style="--c:${ent('patients').color}">${esc(initials(p ? p.name : ''))}</span>
-            <span><div class="pname">${esc(p ? p.name : r.patientId)}</div><div class="psub">${esc(r.reason)}${p ? ` · <span class="ltr num">${esc(p.phone)}</span>` : ''}</div></span></div>
-          <div class="na-doc">${ICON('doctors', 16)} ${esc(d ? titleOf('doctors', d) : '')} · ${APPT_MIN} דקות</div></a>`;
-    }
-    return '';
+    if (key !== 'appointments') return '';
+    const d = docOf(r), p = patOf(r);
+    return `<div class="next-appt big" style="--c:${docColor(r.licenseNo)}">
+        <div class="na-when"><span class="na-day">${esc(dayName(r.dateTime))} · <span class="num">${fdate(r.dateTime)}</span></span><b class="num">${ftime(r.dateTime)}</b></div>
+        <div class="na-who"><span class="avatar" style="--c:${ent('patients').color}">${esc(initials(p ? p.name : ''))}</span>
+          <span><div class="pname">${esc(p ? p.name : r.patientId)}</div><div class="psub">${esc(r.reason)}</div></span></div>
+        <div class="na-doc">${ICON('doctors', 16)} ${esc(d ? titleOf('doctors', d) : '')}</div></div>`;
   }
 
   /* ---------- Delete (שלמות התייחסות) ---------- */
@@ -457,7 +267,7 @@
     }
     if (!confirm(`למחוק את "${titleOf(key, r)}"?`)) return false;
     db[key] = db[key].filter(x => pkOf(e, x) !== String(id));
-    save(); toast(key === 'appointments' ? 'התור בוטל ונמחק' : DELETED(e));
+    save(); toast(DELETED(e));
     if (!location.hash.includes(`/e/${key}/`)) route(true);
     return true;
   }
@@ -482,31 +292,12 @@
       if (f.type === 'datetime' && !parseDT(v)) return err(f.key, 'תאריך ושעה לא תקינים');
       if (f.type === 'ref' && !findBy(f.ref, v)) return err(f.key, `${ent(f.ref).single} לא קיים במערכת (מפתח זר יתום)`);
     });
-    if (key === 'appointments') appointmentRules(data, rec, err);
     const newPk = pkOf(e, data), oldPk = rec ? pkOf(e, rec) : null;
     if (e.pk.every(k => data[k] !== '' && data[k] != null) && newPk !== oldPk && db[key].some(r => pkOf(e, r) === newPk)) {
       errs._form = `${e.fields.find(f => f.key === e.pk[0]).label} כבר קיים – מפתח ראשי חייב להיות ייחודי`;
       err(e.pk[0], 'ערך זה כבר קיים');
     }
     return errs;
-  }
-
-  /* כללים עסקיים לתור: שעות פעילות, לא בעבר, ללא חפיפה לרופא או למטופל */
-  function appointmentRules(data, rec, err) {
-    const v = data.dateTime;
-    if (!v || !parseDT(v)) return;
-    const changed = !rec || rec.dateTime !== v || String(rec.licenseNo) !== String(data.licenseNo) || String(rec.patientId) !== String(data.patientId);
-    if (!changed) return;                                   // עריכת סיבת ביקור בתור קיים – בלי בדיקות מועד
-    if ((!rec || rec.dateTime !== v) && v < nowISO()) return err('dateTime', 'לא ניתן לקבוע תור במועד שכבר עבר');
-    const h = hoursError(v); if (h) return err('dateTime', h);
-    if (data.licenseNo) {
-      const c = clash('licenseNo', data.licenseNo, v, rec);
-      if (c) err('dateTime', `לרופא כבר יש תור ב-${ftime(c.dateTime)} (תור ${c.apptNo}). תור נמשך ${APPT_MIN} דקות`);
-    }
-    if (data.patientId) {
-      const c = clash('patientId', data.patientId, v, rec);
-      if (c) err('dateTime', `למטופל כבר יש תור ב-${ftime(c.dateTime)} (תור ${c.apptNo})`);
-    }
   }
 
   /* ---------- Form ---------- */
@@ -523,8 +314,7 @@
       ctl = `<select id="${id}" name="${f.key}"><option value="">בחירה...</option>
         ${db[f.ref].map(o => { const k = pkOf(te, o); return `<option value="${esc(k)}" ${String(v) === k ? 'selected' : ''}>${esc(titleOf(f.ref, o))}${f.ref === 'patients' ? ` · ${esc(o.patientId)}` : ''}</option>`; }).join('')}</select>`;
     } else if (f.type === 'datetime') {
-      ctl = `<div class="dt-row"><input id="${id}" name="${f.key}" type="datetime-local" step="300" value="${esc(v)}" ${!isEdit ? `min="${nowISO()}"` : ''}>
-        <button type="button" class="btn sm" id="slotBtn" title="המועד הפנוי הקרוב לרופא ולמטופל שנבחרו">${ICON('clock', 15)} מועד פנוי</button></div>`;
+      ctl = `<input id="${id}" name="${f.key}" type="datetime-local" step="300" value="${esc(v)}">`;
     } else {
       const t = { tel: 'tel' }[f.type] || 'text';
       const im = NUMERIC.includes(f.type) || (f.pattern && /\\d/.test(f.pattern)) ? 'inputmode="numeric"' : '';
@@ -539,7 +329,7 @@
   function openForm(key, rec, prefill) {
     const e = ent(key);
     formCtx = { key, rec, touched: new Set(), submitted: false };
-    $('#dlgTitle').textContent = rec ? `עריכת ${e.single}` : key === 'appointments' ? 'קביעת תור' : NEW(e);
+    $('#dlgTitle').textContent = rec ? `עריכת ${e.single}` : NEW(e);
     $('#dlgTile').style.setProperty('--c', e.color);
     $('#dlgTile').innerHTML = ICON(key, 20);
     // בתור: רופא ומטופל קודם, ואז המועד והסיבה
@@ -547,14 +337,6 @@
     $('#dlgBody').innerHTML = order.map(k => inputFor(e, e.fields.find(f => f.key === k), rec, prefill)).join('');
     $('#dlgBody').scrollTop = 0;
     $('#formMsg').textContent = '';
-    const sb = $('#slotBtn');
-    if (sb) sb.addEventListener('click', () => {
-      const d = readForm();
-      const s = nextFreeSlot(d.licenseNo, d.patientId, rec);
-      if (!s) return toast('לא נמצא מועד פנוי בשלושת השבועות הקרובים', true);
-      $('#f_dateTime').value = s; formCtx.touched.add('dateTime');
-      showErrors(validateRecord(key, readForm(), rec), formCtx.submitted);
-    });
     const d = $('#dlg');
     if (typeof d.showModal === 'function') { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
     updateMoreHint();
@@ -600,8 +382,6 @@
     if (!formCtx) return;
     const fld = ev.target.closest('.field');
     if (fld && (ev.type !== 'input' || fld.classList.contains('invalid') || formCtx.submitted)) formCtx.touched.add(fld.dataset.field);
-    // שינוי רופא/מטופל משפיע על בדיקת החפיפה של המועד
-    if (fld && ['licenseNo', 'patientId'].includes(fld.dataset.field) && $('#f_dateTime') && $('#f_dateTime').value) formCtx.touched.add('dateTime');
     showErrors(validateRecord(formCtx.key, readForm(), formCtx.rec), formCtx.submitted);
   }
   function submitForm(ev) {
@@ -616,7 +396,7 @@
     if (Object.keys(errs).length) return formFail();
     if (rec) Object.assign(rec, data); else db[key].push(data);
     save(); closeForm();
-    toast(rec ? 'השינויים נשמרו' : key === 'appointments' ? `התור נקבע ל-${fdtText(data.dateTime)}` : ADDED(e));
+    toast(rec ? 'השינויים נשמרו' : ADDED(e));
     route(true);
   }
   function formFail() {
@@ -640,7 +420,6 @@
     const parts = decodeURIComponent(path).split('/');
     if (parts[0] === 'e' && parts[1] && parts[2]) viewDetail(parts[1], parts.slice(2).join('/'));
     else if (parts[0] === 'e' && parts[1]) viewList(parts[1], q);
-    else if (parts[0] === 'calendar') viewCalendar(q);
     else viewHome();
     if (keepScroll !== true) window.scrollTo(0, 0);
   }
@@ -674,6 +453,4 @@
   $('#today').textContent = new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   load();
   route();
-  // רענון אוטומטי של לוח הבקרה והיומן כל דקה (מצב "הסתיים" / "הבא בתור")
-  setInterval(() => { if (!formCtx && !/#\/e\//.test(location.hash)) route(true); }, 60000);
 })();

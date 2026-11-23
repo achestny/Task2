@@ -19,13 +19,14 @@
 **עובדה שהוצאה מהמודל:** "חניה לכלל צוות הרופאים". החניה משותפת לכל הרופאים, ולכן אינה מתארת או מבדילה רופא מסוים, ואינה קשורה לניהול יומן התורים.
 
 ## יכולות
-- לוח בקרה: התורים של היום (כולל סימון "הבא בתור"), התור הבא, תורים לפי רופא וסיבות ביקור נפוצות.
-- יומן שבועי (א'-ו'): סינון לפי רופא, מעבר בין שבועות, לחיצה על משבצת ריקה קובעת בה תור.
-- הוספה, עריכה ומחיקה לכל ישות, עם מניעת מחיקה של רופא או מטופל שיש להם תורים (שלמות התייחסות).
-- בדיקות תקינות: תעודת זהות עם ספרת ביקורת, מספר רישיון, טלפון, מפתח ראשי ייחודי.
-- כללי תורים: בתוך שעות הפעילות (א'-ה' 08:00-20:00, ו' 08:00-13:00), לא במועד שעבר, ובלי חפיפה (תור = 20 דקות) לאותו רופא או לאותו מטופל. כפתור "מועד פנוי" מציע את המועד הפנוי הקרוב.
-- עמוד ERD בסימון Chen (מלבן, מעוין, אליפסה, קו תחתון למפתח), טבלת קשרים, מעבר לטבלאות, והורדת התרשים כ-PNG או SVG.
-- מיון לפי כל עמודה, חיפוש, ותצוגה מותאמת למחשב, טאבלט וטלפון.
+האפליקציה צמודה לדרישות המסמך: שלוש הישויות, התכונות שלהן, המפתחות והקשרים בלבד.
+- הוספה, עריכה, מחיקה, חיפוש ומיון לרופאים, למטופלים ולתורים.
+- מפתח ראשי בכל ישות: מספר רישיון (רופא), תעודת זהות (מטופל), מספר תור רץ שנוצר אוטומטית (תור). המערכת לא מאפשרת מפתח כפול.
+- הקשרים "מקבל" ו"מזמין" ממומשים כמפתחות זרים בטבלת התורים: בכל תור בוחרים רופא אחד ומטופל אחד מתוך הקיימים.
+- שלמות התייחסות: אי אפשר למחוק רופא או מטופל שיש להם תורים.
+- בדיקת תקינות לשדות: שדות חובה, תעודת זהות (9 ספרות עם ספרת ביקורת), מספר רישיון (5-6 ספרות), טלפון.
+- בעמוד של רופא או מטופל מוצגים התורים הקשורים אליו.
+- עמוד ERD בסימון Chen (מלבן, מעוין, אליפסה, קו תחתון למפתח), טבלת קשרים, העובדה שהוצאה מהמודל, מעבר לטבלאות, והורדת התרשים כ-PNG או SVG.
 
 ## קבצים
 - `index.html` – האפליקציה
@@ -43,4 +44,4 @@ Settings → Pages → Source: **Deploy from a branch**, Branch: `main`, Folder:
 אחרי כדקה האתר זמין בכתובת `https://<שם-משתמש>.github.io/<שם-המאגר>/`.
 
 ## קרדיטים לתמונות
-צילומים מ-Unsplash (רישיון Unsplash, שימוש חופשי): [קבלה במרפאה](https://unsplash.com/photos/hospital-lobby-reception-with-signage-nMyM7fxpokE), [רופאה עם סטטוסקופ](https://unsplash.com/photos/a-woman-in-a-white-shirt-holding-a-stethoscope-tE7_jvK-_YU), [רופאה ומטופל](https://unsplash.com/photos/doctor-consulting-with-a-patient-in-an-office-MJmsLpeHPfg), [מחשב וסטטוסקופ](https://unsplash.com/photos/person-sitting-while-using-laptop-computer-and-green-stethoscope-near-NFvdKIhxYlU), [חדר המתנה](https://unsplash.com/photos/modern-waiting-room-with-chairs-and-inspirational-sign-pxOQ-P97sA8), [סטטוסקופ](https://unsplash.com/photos/black-and-gray-stethoscope-yo01Z-9HQAw). אם צילום לא נטען, מוצג במקומו איור.
+צילומים מ-Unsplash (רישיון Unsplash, שימוש חופשי): [קבלה במרפאה](https://unsplash.com/photos/hospital-lobby-reception-with-signage-nMyM7fxpokE), [רופאה עם סטטוסקופ](https://unsplash.com/photos/a-woman-in-a-white-shirt-holding-a-stethoscope-tE7_jvK-_YU), [רופאה ומטופל](https://unsplash.com/photos/doctor-consulting-with-a-patient-in-an-office-MJmsLpeHPfg), [מחשב וסטטוסקופ](https://unsplash.com/photos/person-sitting-while-using-laptop-computer-and-green-stethoscope-near-NFvdKIhxYlU). אם צילום לא נטען, מוצג במקומו איור.
