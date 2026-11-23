@@ -41,3 +41,6 @@
 ## הפעלה ב-GitHub Pages
 Settings → Pages → Source: **Deploy from a branch**, Branch: `main`, Folder: `/ (root)` → Save.
 אחרי כדקה האתר זמין בכתובת `https://<שם-משתמש>.github.io/<שם-המאגר>/`.
+
+## קרדיטים לתמונות
+צילומים מ-Unsplash (רישיון Unsplash, שימוש חופשי): [קבלה במרפאה](https://unsplash.com/photos/hospital-lobby-reception-with-signage-nMyM7fxpokE), [רופאה עם סטטוסקופ](https://unsplash.com/photos/a-woman-in-a-white-shirt-holding-a-stethoscope-tE7_jvK-_YU), [רופאה ומטופל](https://unsplash.com/photos/doctor-consulting-with-a-patient-in-an-office-MJmsLpeHPfg), [מחשב וסטטוסקופ](https://unsplash.com/photos/person-sitting-while-using-laptop-computer-and-green-stethoscope-near-NFvdKIhxYlU), [חדר המתנה](https://unsplash.com/photos/modern-waiting-room-with-chairs-and-inspirational-sign-pxOQ-P97sA8), [סטטוסקופ](https://unsplash.com/photos/black-and-gray-stethoscope-yo01Z-9HQAw). אם צילום לא נטען, מוצג במקומו איור.

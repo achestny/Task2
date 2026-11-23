@@ -180,7 +180,8 @@
     const nextD = next && docOf(next), nextP = next && patOf(next);
 
     $('#view').innerHTML = `
-      <section class="welcome">
+      <section class="welcome${window.photoImg ? ' has-photo' : ''}">
+        ${window.photoImg ? `<div class="wl-photo-wrap">${photoImg('hero', 1400, 'wl-photo', true)}</div>` : ''}
         <div class="wl-text"><div class="wl-greet">${greeting()}</div>
           <h1>לוח בקרה</h1>
           <p>יומן התורים של המרפאה: מי מגיע היום, מה קורה השבוע ואצל איזה רופא.</p></div>
@@ -210,7 +211,7 @@
         <div class="card"><div class="card-head"><h2>התורים של היום</h2><span class="sub">${esc(new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' }))}</span><a class="more" href="#/calendar">ליומן המלא</a></div>
           ${today.length ? `<div class="appt-list">${today.map(a => apptRow(a, { next })).join('')}</div>`
             : `<div class="empty" style="padding:26px">${window.ILLUS ? ILLUS.empty : ''}<div class="empty-t">${todayH ? 'אין תורים היום' : 'המרפאה סגורה היום'}</div></div>`}</div>
-        <div class="card next-card"><div class="card-head"><h2>התור הבא</h2></div>
+        <div class="card next-card">${window.photoImg ? `<div class="na-photo">${photoImg('next', 700, 'na-img')}</div>` : ''}<div class="card-head"><h2>התור הבא</h2></div>
           ${next ? `<a class="next-appt" href="${href('appointments', next)}" style="--c:${docColor(next.licenseNo)}">
               <div class="na-when"><span class="na-day">${esc(dayName(next.dateTime))} · <span class="num">${fdate(next.dateTime)}</span></span><b class="num">${ftime(next.dateTime)}</b></div>
               <div class="na-who"><span class="avatar" style="--c:${P.color}">${esc(initials(nextP ? nextP.name : ''))}</span>
@@ -259,7 +260,7 @@
 
     $('#view').innerHTML = `
       <div class="page-head with-art" style="--c:#0284c7">
-        <div class="ph-art">${window.ILLUS ? ILLUS.calendar : ''}</div>
+        <div class="ph-art">${window.photoImg ? photoImg('calendar', 420, 'ph-photo', true) : (window.ILLUS ? ILLUS.calendar : '')}</div>
         <div><h1>יומן תורים <span class="count-pill" style="vertical-align:middle">${rows.length}</span></h1>
           <p>תצוגה שבועית של התורים. לחיצה על תור פותחת אותו; לחיצה על משבצת ריקה קובעת בה תור חדש.</p></div>
         <div class="actions">
@@ -325,7 +326,7 @@
     const isAppt = key === 'appointments';
     $('#view').innerHTML = `
       <div class="page-head with-art" style="--c:${e.color}">
-        <div class="ph-art">${window.ILLUS && ILLUS[key] || ''}</div>
+        <div class="ph-art">${window.photoImg ? photoImg(key, 420, 'ph-photo', true) : (window.ILLUS && ILLUS[key] || '')}</div>
         <div><h1>${esc(e.label)} <span class="count-pill" style="vertical-align:middle">${db[key].length}</span></h1>
           <p>${esc(e.desc)}</p></div>
         <div class="actions">

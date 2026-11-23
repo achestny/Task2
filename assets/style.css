@@ -625,3 +625,10 @@ a.tel{color:inherit}
 .nav-item.active{background:rgba(20,184,166,.16);box-shadow:inset -3px 0 0 #2dd4bf}
 .nav-item.active .nav-ic{color:#5eead4}
 .erd-canvas{min-height:0!important}
+/* צילום בראש כרטיס "התור הבא" */
+.next-card{padding-top:0;overflow:hidden}
+.na-photo{margin:0 -24px 16px;height:120px;position:relative}
+.na-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,#fff)}
+.na-img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s}.na-img.ok{opacity:1}
+.welcome.has-photo .wl-photo-wrap::after{background:linear-gradient(90deg,rgba(4,47,46,.15) 0%,rgba(4,47,46,.55) 45%,rgba(4,47,46,.88) 100%),linear-gradient(0deg,rgba(4,47,46,.75),transparent 55%)!important}
+@media (max-width:860px){.na-photo{margin:0 -18px 14px}}

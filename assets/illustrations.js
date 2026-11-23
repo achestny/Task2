@@ -56,3 +56,31 @@
       ${sparkle(150, 30, '#fbbf24')}${sparkle(46, 36, '#93c5fd')}`, 'il-empty')
   };
 })();
+
+/* צילומים (Unsplash – שימוש חופשי לפי Unsplash License). אם צילום לא נטען – מוצג האיור במקומו */
+(function () {
+  'use strict';
+  const U = (id, w) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=70`;
+  window.PHOTOS = {
+    hero:         { id: 'photo-1519494026892-80bbd2d6fd0d', pos: 'center 55%', page: 'hospital-lobby-reception-with-signage-nMyM7fxpokE' },          // קבלה במרפאה
+    doctors:      { id: 'photo-1638202993928-7267aad84c31', pos: 'center 30%', page: 'a-woman-in-a-white-shirt-holding-a-stethoscope-tE7_jvK-_YU' }, // רופאה עם סטטוסקופ
+    patients:     { id: 'photo-1758691462863-9e1b8a863140', pos: 'center 40%', page: 'doctor-consulting-with-a-patient-in-an-office-MJmsLpeHPfg' },  // רופאה ומטופל
+    appointments: { id: 'photo-1576091160550-2173dba999ef', pos: 'center 50%', page: 'person-sitting-while-using-laptop-computer-and-green-stethoscope-near-NFvdKIhxYlU' }, // קביעת תורים
+    calendar:     { id: 'photo-1762625570087-6d98fca29531', pos: 'center 60%', page: 'modern-waiting-room-with-chairs-and-inspirational-sign-pxOQ-P97sA8' }, // חדר המתנה
+    next:         { id: 'photo-1505751172876-fa1923c5c528', pos: 'center 50%', page: 'black-and-gray-stethoscope-yo01Z-9HQAw' }                       // סטטוסקופ
+  };
+  window.photoImg = (key, w, cls, eager) => {
+    const p = window.PHOTOS[key];
+    if (!p) return (window.ILLUS && ILLUS[key]) || '';
+    return `<img class="${cls}" src="${U(p.id, w)}" srcset="${U(p.id, w)} 1x, ${U(p.id, w * 2)} 2x" alt="" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'}
+      style="object-position:${p.pos}" decoding="async" referrerpolicy="no-referrer" title="צילום: Unsplash" data-k="${key}" onerror="__photoFail(this)" onload="this.classList.add('ok')">`;
+  };
+  window.__photoFail = img => {
+    const k = img.dataset.k, host = img.parentElement;
+    img.remove();
+    if (!host) return;
+    if (host.classList.contains('wl-photo-wrap')) host.closest('.welcome').classList.remove('has-photo');
+    else if (host.classList.contains('na-photo')) host.remove();
+    else host.innerHTML = (window.ILLUS && ILLUS[k === 'hero' ? 'clinic' : k]) || '';
+  };
+})();
