@@ -20,6 +20,7 @@
 
 ## יכולות
 האפליקציה צמודה לדרישות המסמך: שלוש הישויות, התכונות שלהן, המפתחות והקשרים בלבד.
+- לוח תורים בעמוד הראשי (בסגנון Qflow): לכל רופא – מספר התור שבטיפול עכשיו והבאים בתור, ומסך המתנה במסך מלא. נגזר מתאריך ושעת התור ומהרופא בלבד, בלי שדה נוסף במודל.
 - הוספה, עריכה, מחיקה, חיפוש ומיון לרופאים, למטופלים ולתורים.
 - מפתח ראשי בכל ישות: מספר רישיון (רופא), תעודת זהות (מטופל), מספר תור רץ שנוצר אוטומטית (תור). המערכת לא מאפשרת מפתח כפול.
 - הקשרים "מקבל" ו"מזמין" ממומשים כמפתחות זרים בטבלת התורים: בכל תור בוחרים רופא אחד ומטופל אחד מתוך הקיימים.
@@ -44,4 +45,4 @@ Settings → Pages → Source: **Deploy from a branch**, Branch: `main`, Folder:
 אחרי כדקה האתר זמין בכתובת `https://<שם-משתמש>.github.io/<שם-המאגר>/`.
 
 ## קרדיטים לתמונות
-צילומים מ-Unsplash (רישיון Unsplash, שימוש חופשי): [קבלה במרפאה](https://unsplash.com/photos/hospital-lobby-reception-with-signage-nMyM7fxpokE), [רופאה עם סטטוסקופ](https://unsplash.com/photos/a-woman-in-a-white-shirt-holding-a-stethoscope-tE7_jvK-_YU), [רופאה ומטופל](https://unsplash.com/photos/doctor-consulting-with-a-patient-in-an-office-MJmsLpeHPfg), [מחשב וסטטוסקופ](https://unsplash.com/photos/person-sitting-while-using-laptop-computer-and-green-stethoscope-near-NFvdKIhxYlU). אם צילום לא נטען, מוצג במקומו איור.
+צילומים מ-Unsplash (רישיון Unsplash, שימוש חופשי): [מבואת מרפאה](https://unsplash.com/photos/green-potted-plant-on-white-ceramic-floor-tiles-HuWm7malJ18), [רופאה עם סטטוסקופ](https://unsplash.com/photos/a-woman-in-a-white-shirt-holding-a-stethoscope-tE7_jvK-_YU), [רופאה ומטופל](https://unsplash.com/photos/doctor-consulting-with-a-patient-in-an-office-MJmsLpeHPfg), [מחשב וסטטוסקופ](https://unsplash.com/photos/person-sitting-while-using-laptop-computer-and-green-stethoscope-near-NFvdKIhxYlU). אם צילום לא נטען, מוצג במקומו איור.

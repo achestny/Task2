@@ -59,7 +59,7 @@
   'use strict';
   const U = (id, w) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=70`;
   window.PHOTOS = {
-    hero:         { id: 'photo-1519494026892-80bbd2d6fd0d', pos: 'center 55%', page: 'hospital-lobby-reception-with-signage-nMyM7fxpokE' },          // קבלה במרפאה
+    hero:         { id: 'photo-1631248055158-edec7a3c072b', pos: 'center 62%', page: 'green-potted-plant-on-white-ceramic-floor-tiles-HuWm7malJ18' }, // מבואת מרפאה (ללא שילוט)
     doctors:      { id: 'photo-1638202993928-7267aad84c31', pos: 'center 30%', page: 'a-woman-in-a-white-shirt-holding-a-stethoscope-tE7_jvK-_YU' }, // רופאה עם סטטוסקופ
     patients:     { id: 'photo-1758691462863-9e1b8a863140', pos: 'center 40%', page: 'doctor-consulting-with-a-patient-in-an-office-MJmsLpeHPfg' },  // רופאה ומטופל
     appointments: { id: 'photo-1576091160550-2173dba999ef', pos: 'center 50%', page: 'person-sitting-while-using-laptop-computer-and-green-stethoscope-near-NFvdKIhxYlU' }  // תורים
