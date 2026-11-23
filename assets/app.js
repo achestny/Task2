@@ -126,24 +126,24 @@
     return { current, waiting, nextDay, todayCount: todays.length };
   }
   function queueBoard(big) {
-    if (!db.doctors.length) return '<div class="empty" style="padding:24px">אין רופאים במערכת</div>';
-    return `<div class="q-grid${big ? ' big' : ''}">${db.doctors.map(d => {
-      const q = queueOf(d), c = docColor(d.licenseNo), cur = q.current, p = cur && patOf(cur);
-      const nextList = cur ? (q.waiting.length ? q.waiting : q.nextDay.slice(0, 3)) : (q.waiting.length ? q.waiting.slice(1) : q.nextDay.slice(0, 3));
-      return `<div class="q-doc" style="--c:${c}">
-        <a class="q-head" href="${href('doctors', d)}"><span class="avatar" style="--c:${c}">${esc(initials(d.name))}</span>
-          <span><b>${esc(titleOf('doctors', d))}</b><small>${q.todayCount ? `${q.todayCount} תורים היום` : 'אין תורים היום'}</small></span></a>
-        <div class="q-now">
-          <span class="q-lbl">${cur ? 'תור נוכחי' : q.waiting.length ? 'התור הראשון היום' : 'אין תור כרגע'}</span>
-          ${cur ? `<a class="q-num num" href="${href('appointments', cur)}">${esc(cur.apptNo)}</a><span class="q-who">${esc(shortName(p ? p.name : ''))} · <span class="num">${ftime(cur.dateTime)}</span></span>`
-            : q.waiting.length ? `<a class="q-num num dim" href="${href('appointments', q.waiting[0])}">${esc(q.waiting[0].apptNo)}</a><span class="q-who">בשעה <span class="num">${ftime(q.waiting[0].dateTime)}</span></span>`
-            : '<span class="q-num num dim">—</span>'}
-        </div>
-        <div class="q-next"><span class="q-lbl">${q.waiting.length ? `הבאים בתור${nextList.length ? ` (${nextList.length})` : ''}` : 'הבאים בתור'}</span>
-          ${nextList.length ? `<ol>${nextList.slice(0, big ? 5 : 4).map(a => { const pp = patOf(a); return `<li><a href="${href('appointments', a)}"><b class="num">${esc(a.apptNo)}</b><span>${esc(shortName(pp ? pp.name : ''))}</span><span class="num t" dir="ltr">${q.waiting.length ? ftime(a.dateTime) : a.dateTime.slice(8, 10) + '.' + a.dateTime.slice(5, 7) + ' ' + ftime(a.dateTime)}</span></a></li>`; }).join('')}</ol>`
-            : '<div class="q-empty">אין תורים ממתינים</div>'}
-        </div></div>`;
-    }).join('')}</div>`;
+    if (!db.doctors.length) return '<div class="qb-empty">אין רופאים במערכת</div>';
+    const rows = db.doctors.map(d => {
+      const q = queueOf(d), c = docColor(d.licenseNo), cur = q.current;
+      const first = !cur && q.waiting[0];
+      const shown = cur || first;
+      const next = (cur ? q.waiting : q.waiting.slice(1)).slice(0, big ? 5 : 4);
+      return `<div class="qb-row" style="--c:${c}">
+        <a class="qb-doc" href="${href('doctors', d)}"><span class="qb-av">${esc(initials(d.name))}</span><span class="qb-name">${esc(titleOf('doctors', d))}</span></a>
+        <div class="qb-cur">${shown
+          ? `<a class="qb-num num${first ? ' wait' : ''}" href="${href('appointments', shown)}" title="${first ? 'התור הראשון היום' : 'תור נוכחי'}">${esc(shown.apptNo)}</a><span class="qb-time num">${ftime(shown.dateTime)}</span>`
+          : '<span class="qb-num none">—</span>'}</div>
+        <div class="qb-next">${next.length
+          ? next.map(a => `<a class="qb-chip" href="${href('appointments', a)}"><b class="num">${esc(a.apptNo)}</b><small class="num">${ftime(a.dateTime)}</small></a>`).join('')
+          : '<span class="qb-none">אין ממתינים</span>'}</div>
+      </div>`;
+    }).join('');
+    return `<div class="qb${big ? ' big' : ''}">
+      <div class="qb-headrow"><span>רופא</span><span>תור נוכחי</span><span>הבאים בתור</span></div>${rows}</div>`;
   }
   let qTimer = 0;
   function startQueueTimer() {
@@ -159,12 +159,12 @@
   /* מסך המתנה – לוח התורים בלבד, במסך מלא */
   function viewQueue() {
     document.body.classList.add('q-screen');
-    $('#view').innerHTML = `<div class="q-wall">
-        <div class="q-wall-head"><span class="brand-mark">${ICON('clinic', 22)}</span><h1>תור עכשיו במרפאה</h1>
-          <span class="spacer"></span><span class="q-clock num" id="qClock"></span>
-          <button class="btn sm" id="fsBtn" type="button">${ICON('fit', 15)} מסך מלא</button>
-          <a class="btn sm" href="#/">יציאה</a></div>
-        <div id="qBoard" data-big="1">${queueBoard(true)}</div></div>`;
+    $('#view').innerHTML = `<section class="qb-panel wall">
+        <div class="qb-top"><span class="brand-mark">${ICON('clinic', 22)}</span><h2>תורים במרפאה</h2><span class="spacer"></span>
+          <span class="qb-clock num" id="qClock"></span>
+          <button class="qb-btn" id="fsBtn" type="button">${ICON('fit', 15)} מסך מלא</button>
+          <a class="qb-btn" href="#/">יציאה</a></div>
+        <div id="qBoard" data-big="1">${queueBoard(true)}</div></section>`;
     $('#fsBtn').addEventListener('click', () => { const el = document.documentElement; if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen(); });
     startQueueTimer();
   }
@@ -197,9 +197,10 @@
           <div class="val">${db.appointments.length}</div><div class="foot">מזהה: מספר תור</div></a>
       </div>
 
-      <div class="card q-card"><div class="card-head"><h2>תור עכשיו אצל הרופאים</h2>
-          <span class="q-clock num" id="qClock"></span><a class="more" href="#/queue">${ICON('fit', 15)} מסך המתנה</a></div>
-        <div id="qBoard">${queueBoard()}</div></div>
+      <section class="qb-panel">
+        <div class="qb-top"><span class="qb-dot"></span><h2>תורים במרפאה</h2><span class="spacer"></span>
+          <span class="qb-clock num" id="qClock"></span><a class="qb-btn" href="#/queue">${ICON('fit', 15)} מסך המתנה</a></div>
+        <div id="qBoard">${queueBoard()}</div></section>
 
       <div class="foot-note">הנתונים נשמרים בדפדפן בלבד (localStorage) · כל הנתונים פיקטיביים
         <button class="btn sm ghost" id="resetBtn" type="button">איפוס לנתוני הדגמה</button></div>`;
