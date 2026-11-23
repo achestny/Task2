@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="app-version" content="1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>תרשים ישויות-קשרים (ERD) – ניהול תורים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css?v=1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230d9488'/%3E%3Cpath d='M12 6.5v11M6.5 12h11' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="scrim"></div>
+  <div class="main">
+    <header class="header">
+      <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="תפריט"></button>
+      <nav class="crumbs" id="crumbs"></nav>
+      <span class="spacer"></span>
+      <span class="today" id="today"></span>
+    </header>
+    <main class="content">
+      <div class="page-head with-art" style="--c:#6366f1">
+        <div class="ph-art" id="erdArt"></div>
+        <div>
+          <div class="eyebrow" style="--c:#6366f1"><span class="tile" id="erdTile"></span>מודל הנתונים</div>
+          <h1>תרשים ישויות-קשרים (ERD)</h1>
+          <p>מודל הנתונים של מערכת ניהול התורים במרפאה: שלוש ישויות (רופא, מטופל, תור) ושני קשרים (מקבל, מזמין). מלבן = ישות, מעוין = קשר, אליפסה = תכונה, ותכונה עם קו תחתון = מפתח ראשי.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="erd-toolbar">
+          <div class="erd-legend" id="legend"></div>
+          <span class="spacer"></span>
+          <button class="btn sm" id="toggleAttrs" type="button"></button>
+          <button class="btn sm" id="dlPng" type="button" title="הורדת התרשים כתמונה"></button>
+          <button class="btn sm" id="dlSvg" type="button" title="הורדת התרשים כקובץ SVG"></button>
+          <button class="icon-btn" id="zoomOut" type="button" title="הקטנה" aria-label="הקטנה"></button>
+          <button class="icon-btn" id="zoomFit" type="button" title="התאמה למסך" aria-label="התאמה למסך"></button>
+          <button class="icon-btn" id="zoomIn" type="button" title="הגדלה" aria-label="הגדלה"></button>
+        </div>
+        <div class="erd-canvas" id="canvas"></div>
+        <div class="sel-bar"><span class="dot"></span><span id="selInfo">לחצו על ישות או על קשר כדי להדגיש את החיבורים שלו</span>
+          <button class="btn sm ghost" id="clearSel" type="button" hidden>ניקוי בחירה</button></div>
+      </div>
+
+      <div class="card flush">
+        <div class="card-head" style="padding:22px 24px 0"><h2>הקשרים במערכת</h2><span class="count-pill" id="relCount"></span></div>
+        <div class="table-wrap" style="margin-top:6px"><table class="data rels" id="relTable"></table></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>עובדות שהוצאו מהמודל</h2></div>
+        <p class="muted" style="margin:-6px 0 14px">לפי סעיף 6 בהנחיות: עובדות מתיאור המערכת שאינן רלוונטיות לבעיה אינן מופיעות בתרשים.</p>
+        <div id="excluded"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>מעבר מ-ERD לטבלאות (מודל יחסי)</h2></div>
+        <p class="muted" style="margin:-6px 0 18px">כל ישות הופכת לטבלה; קשר <span class="ltr">1:N</span> מיושם במפתח זר בצד ה"רבים"; קשר <span class="ltr">N:M</span> מיושם בטבלת קשר נפרדת עם מפתח ראשי משולב.</p>
+        <div class="schema-grid" id="schemaGrid"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="assets/schema.js?v=1"></script>
+<script src="assets/illustrations.js?v=1"></script>
+<script src="assets/shell.js?v=1"></script>
+<script src="assets/erd.js?v=1"></script>
+</body>
+</html>
