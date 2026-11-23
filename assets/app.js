@@ -130,17 +130,16 @@
     return `<div class="q-grid${big ? ' big' : ''}">${db.doctors.map(d => {
       const q = queueOf(d), c = docColor(d.licenseNo), cur = q.current, p = cur && patOf(cur);
       const nextList = cur ? (q.waiting.length ? q.waiting : q.nextDay.slice(0, 3)) : (q.waiting.length ? q.waiting.slice(1) : q.nextDay.slice(0, 3));
-      const last = cur && !q.waiting.length;
       return `<div class="q-doc" style="--c:${c}">
         <a class="q-head" href="${href('doctors', d)}"><span class="avatar" style="--c:${c}">${esc(initials(d.name))}</span>
           <span><b>${esc(titleOf('doctors', d))}</b><small>${q.todayCount ? `${q.todayCount} תורים היום` : 'אין תורים היום'}</small></span></a>
         <div class="q-now">
-          <span class="q-lbl">${cur ? (last ? 'תור אחרון היום' : 'בטיפול עכשיו') : q.waiting.length ? 'התור הראשון היום' : 'אין תור כרגע'}</span>
+          <span class="q-lbl">${cur ? 'תור נוכחי' : q.waiting.length ? 'התור הראשון היום' : 'אין תור כרגע'}</span>
           ${cur ? `<a class="q-num num" href="${href('appointments', cur)}">${esc(cur.apptNo)}</a><span class="q-who">${esc(shortName(p ? p.name : ''))} · <span class="num">${ftime(cur.dateTime)}</span></span>`
             : q.waiting.length ? `<a class="q-num num dim" href="${href('appointments', q.waiting[0])}">${esc(q.waiting[0].apptNo)}</a><span class="q-who">בשעה <span class="num">${ftime(q.waiting[0].dateTime)}</span></span>`
             : '<span class="q-num num dim">—</span>'}
         </div>
-        <div class="q-next"><span class="q-lbl">${q.waiting.length ? `הבאים בתור${nextList.length ? ` (${nextList.length})` : ''}` : nextList.length ? 'התורים הבאים (בימים הקרובים)' : 'הבאים בתור'}</span>
+        <div class="q-next"><span class="q-lbl">${q.waiting.length ? `הבאים בתור${nextList.length ? ` (${nextList.length})` : ''}` : 'הבאים בתור'}</span>
           ${nextList.length ? `<ol>${nextList.slice(0, big ? 5 : 4).map(a => { const pp = patOf(a); return `<li><a href="${href('appointments', a)}"><b class="num">${esc(a.apptNo)}</b><span>${esc(shortName(pp ? pp.name : ''))}</span><span class="num t" dir="ltr">${q.waiting.length ? ftime(a.dateTime) : a.dateTime.slice(8, 10) + '.' + a.dateTime.slice(5, 7) + ' ' + ftime(a.dateTime)}</span></a></li>`; }).join('')}</ol>`
             : '<div class="q-empty">אין תורים ממתינים</div>'}
         </div></div>`;
